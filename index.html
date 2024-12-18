@@ -101,6 +101,21 @@
             display: flex;
         }
 
+        .toggle-view-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #444;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 20;
+        }
+
         @media (max-width: 600px) {
             .flashcard {
                 height: 150px;
@@ -121,7 +136,7 @@
     </style>
 </head>
 <body>
-    <div id="instructions">Tap the card to flip, swipe or scroll to navigate, press "K" to view all cards.</div>
+    <div id="instructions">Tap the card to flip, swipe or scroll to navigate, or press "K" to toggle all cards.</div>
     <div class="flashcard-container">
         <div class="flashcard" id="flashcard">
             <div class="front">1. Federal Court Levels</div>
@@ -129,6 +144,7 @@
         </div>
     </div>
     <div class="grid-view" id="grid-view"></div>
+    <button class="toggle-view-button" id="toggle-view-button">View All</button>
 
     <script>
         const flashcards = [
@@ -158,6 +174,7 @@
         const flashcardElement = document.getElementById('flashcard');
         const gridView = document.getElementById('grid-view');
         const flashcardContainer = document.querySelector('.flashcard-container');
+        const toggleButton = document.getElementById('toggle-view-button');
 
         function updateFlashcard() {
             flashcardElement.querySelector('.front').textContent = flashcards[currentCardIndex].front;
@@ -178,21 +195,11 @@
             flashcardElement.classList.toggle('flipped');
         });
 
-        window.addEventListener('touchstart', (event) => {
-            const startX = event.touches[0].clientX;
-            window.addEventListener('touchend', (e) => {
-                const endX = e.changedTouches[0].clientX;
-                if (endX - startX > 50) previousFlashcard();
-                if (startX - endX > 50) nextFlashcard();
-            }, { once: true });
-        });
-
-        window.addEventListener('keydown', (event) => {
-            if (event.key.toLowerCase() === 'k') {
-                gridView.classList.toggle('grid-view-active');
-                flashcardContainer.style.display = gridView.classList.contains('grid-view-active') ? 'none' : 'flex';
-                if (gridView.classList.contains('grid-view-active')) populateGridView();
-            }
+        toggleButton.addEventListener('click', () => {
+            gridView.classList.toggle('grid-view-active');
+            flashcardContainer.style.display = gridView.classList.contains('grid-view-active') ? 'none' : 'flex';
+            toggleButton.textContent = gridView.classList.contains('grid-view-active') ? 'Back to Card' : 'View All';
+            if (gridView.classList.contains('grid-view-active')) populateGridView();
         });
 
         function populateGridView() {
@@ -206,6 +213,7 @@
                     updateFlashcard();
                     gridView.classList.remove('grid-view-active');
                     flashcardContainer.style.display = 'flex';
+                    toggleButton.textContent = 'View All';
                 });
                 gridView.appendChild(cardElement);
             });
