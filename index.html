@@ -21,10 +21,14 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
         }
 
         .flashcard {
-            width: 300px;
+            width: 90%;
+            max-width: 300px;
             height: 200px;
             background: #fff;
             border-radius: 10px;
@@ -68,26 +72,27 @@
             font-size: 1rem;
             color: #ccc;
             z-index: 10;
+            text-align: center;
         }
 
         .grid-view {
             display: none;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 10px;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: #000000;
-            overflow: auto;
+            overflow-y: auto;
         }
 
         .grid-view .flashcard {
-            width: 200px;
+            width: 45%;
             height: 150px;
             transition: transform 0.3s;
         }
@@ -95,10 +100,28 @@
         .grid-view-active {
             display: flex;
         }
+
+        @media (max-width: 600px) {
+            .flashcard {
+                height: 150px;
+                font-size: 1rem;
+            }
+
+            .grid-view .flashcard {
+                width: 90%;
+                height: 120px;
+            }
+        }
+
+        @media (orientation: portrait) {
+            .flashcard-container {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
-    <div id="instructions">Use the scroll wheel to switch cards, click to flip, press "K" to view all cards.</div>
+    <div id="instructions">Tap the card to flip, swipe or scroll to navigate, press "K" to view all cards.</div>
     <div class="flashcard-container">
         <div class="flashcard" id="flashcard">
             <div class="front">1. Federal Court Levels</div>
@@ -155,13 +178,21 @@
             flashcardElement.classList.toggle('flipped');
         });
 
-        window.addEventListener('wheel', (event) => {
-            if (event.deltaY > 0) {
-                nextFlashcard();
-            } else {
-                previousFlashcard();
+        window.addEventListener('touchstart', (event) => {
+            const startX = event.touches[0].clientX;
+            window.addEventListener('touchend', (e) => {
+                const endX = e.changedTouches[0].clientX;
+                if (endX - startX > 50) previousFlashcard();
+                if (startX - endX > 50) nextFlashcard();
+            }, { once: true });
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'k') {
+                gridView.classList.toggle('grid-view-active');
+                flashcardContainer.style.display = gridView.classList.contains('grid-view-active') ? 'none' : 'flex';
+                if (gridView.classList.contains('grid-view-active')) populateGridView();
             }
-            flashcardElement.classList.remove('flipped');
         });
 
         function populateGridView() {
@@ -179,16 +210,6 @@
                 gridView.appendChild(cardElement);
             });
         }
-
-        window.addEventListener('keydown', (event) => {
-            if (event.key.toLowerCase() === 'k') {
-                gridView.classList.toggle('grid-view-active');
-                flashcardContainer.style.display = gridView.classList.contains('grid-view-active') ? 'none' : 'flex';
-                if (gridView.classList.contains('grid-view-active')) {
-                    populateGridView();
-                }
-            }
-        });
 
         updateFlashcard();
     </script>
